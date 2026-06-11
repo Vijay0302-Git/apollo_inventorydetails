@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apollo Tyres — Capital Optimization Directory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --ink:#0D0D0D;--paper:#F7F5F0;--rule:#D8D4CB;
+  --accent:#C8410A;--accent-dim:#F2E5DC;
+  --elim:#1A3A5C;--elim-bg:#E4EDF5;
+  --reduce:#2D6A4F;--reduce-bg:#E4F2EC;
+  --raise:#7B4F00;--raise-bg:#FFF0D6;
+  --create:#5C1A6E;--create-bg:#F3E8F8;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;padding:36px 28px 64px;}
+
+/* HEADER */
+.page-header{border-top:3px solid var(--ink);padding-top:18px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;}
+.page-header h1{font-weight:600;font-size:21px;letter-spacing:-0.3px;line-height:1.2;}
+.page-header h1 span{display:block;font-weight:300;font-size:12px;color:#666;letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px;}
+.chips{display:flex;gap:10px;flex-wrap:wrap;}
+.chip{border:1.5px solid var(--rule);border-radius:3px;padding:4px 11px;font-family:var(--mono);font-size:11px;font-weight:600;}
+.chip.hot{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--rule);margin-bottom:24px;flex-wrap:wrap;}
+.tab-btn{padding:9px 20px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;color:#888;transition:color .15s,border-color .15s;}
+.tab-btn:hover{color:var(--ink);}
+.tab-btn.active{color:var(--ink);border-bottom-color:var(--ink);}
+.tab-btn.t-elim.active{color:var(--elim);border-bottom-color:var(--elim);}
+.tab-btn.t-reduce.active{color:var(--reduce);border-bottom-color:var(--reduce);}
+.tab-btn.t-raise.active{color:var(--raise);border-bottom-color:var(--raise);}
+.tab-btn.t-create.active{color:var(--create);border-bottom-color:var(--create);}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+
+/* OVERVIEW TABLE */
+.table-wrap{overflow-x:auto;border:1.5px solid var(--rule);border-radius:4px;}
+table{width:100%;border-collapse:collapse;min-width:1100px;}
+thead tr{background:var(--ink);color:var(--paper);}
+thead th{padding:9px 13px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;text-align:left;white-space:nowrap;border-right:1px solid #2a2a2a;}
+thead th:last-child{border-right:none;}
+thead th.w-id{width:50px;}thead th.w-name{width:195px;}thead th.w-seg{width:88px;}
+thead th.w-errc{width:88px;}thead th.w-cap{width:118px;}thead th.w-kpi{width:155px;}
+thead th.w-impact{min-width:215px;}thead th.w-inv{width:108px;}
+tbody tr{border-bottom:1px solid var(--rule);transition:background .12s;}
+tbody tr:hover{background:#EEEAE2;}tbody tr:last-child{border-bottom:none;}
+tbody td{padding:10px 13px;vertical-align:top;font-size:13px;border-right:1px solid var(--rule);}
+tbody td:last-child{border-right:none;}
+.proj-id{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--accent);}
+.proj-name{font-weight:600;font-size:12.5px;line-height:1.45;}
+.seg-badge{display:inline-block;padding:2px 8px;border-radius:2px;font-family:var(--mono);font-size:10px;font-weight:600;background:#E8E4DC;color:#444;white-space:nowrap;}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 6px;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:600;white-space:nowrap;}
+.pill.elim{background:var(--elim-bg);color:var(--elim);}
+.pill.reduce{background:var(--reduce-bg);color:var(--reduce);}
+.pill.raise{background:var(--raise-bg);color:var(--raise);}
+.pill.create{background:var(--create-bg);color:var(--create);}
+.cap-val{font-family:var(--mono);font-size:12.5px;font-weight:600;white-space:nowrap;}
+.cap-sub{display:block;font-size:10px;font-weight:400;color:#888;margin-top:2px;}
+.kpi{font-family:var(--mono);font-size:11.5px;color:#333;line-height:1.5;}
+.impact{font-size:12px;color:#333;line-height:1.55;}
+.inv-val{font-family:var(--mono);font-size:11.5px;font-weight:600;color:#333;white-space:nowrap;}
+.inv-sub{display:block;font-family:var(--sans);font-size:10px;font-weight:400;color:#888;margin-top:3px;line-height:1.4;white-space:normal;}
+.grp td{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:6px 13px;border-right:1px solid rgba(255,255,255,.15);color:#fff;}
+.grp.elim td{background:var(--elim);}
+.grp.reduce td{background:var(--reduce);}
+.grp.raise td{background:var(--raise);}
+.grp.create td{background:var(--create);}
+.total-row td{background:var(--ink);color:var(--paper);padding:11px 13px;font-weight:600;border-right:1px solid #2a2a2a;}
+.t-label{font-family:var(--mono);font-size:11px;letter-spacing:.6px;text-transform:uppercase;}
+.t-amount{font-family:var(--mono);font-size:19px;font-weight:600;color:#F4B46A;}
+.t-note{font-size:11px;font-weight:300;color:#aaa;margin-top:2px;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* ══ ACCORDION ══════════════════════════════════════════════════ */
+.acc-wrap{display:flex;flex-direction:column;gap:10px;}
+
+/* Accordion item header (always visible) */
+.acc-item{border:1.5px solid var(--rule);border-radius:5px;overflow:hidden;background:#fff;}
+.acc-head{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;user-select:none;transition:background .12s;}
+.acc-head:hover{background:#F0EDE7;}
+.acc-head-id{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--accent);min-width:38px;line-height:1;}
+.acc-head-info{flex:1;}
+.acc-head-title{font-weight:600;font-size:13.5px;line-height:1.35;}
+.acc-head-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+.acc-head-kpi{font-family:var(--mono);font-size:11px;color:#666;margin-left:auto;text-align:right;white-space:nowrap;}
+.acc-chevron{font-size:14px;color:#aaa;transition:transform .2s;min-width:18px;}
+.acc-item.open .acc-chevron{transform:rotate(180deg);}
+
+/* Accordion body (collapses) */
+.acc-body{display:none;border-top:1px solid var(--rule);}
+.acc-item.open .acc-body{display:block;}
+
+/* Body layout: 2-col top row + sections below */
+.acc-body-inner{padding:18px 20px;}
+.acc-top-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px;}
+.acc-stat{background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:10px 13px;}
+.acc-stat-label{font-family:var(--mono);font-size:9px;letter-spacing:.7px;text-transform:uppercase;color:#999;}
+.acc-stat-val{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);margin-top:3px;line-height:1.3;}
+.acc-stat-sub{font-size:10px;color:#888;margin-top:2px;}
+
+/* Section rows */
+.acc-sections{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.acc-section{}
+.sec-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:#999;margin-bottom:5px;border-bottom:1px solid var(--rule);padding-bottom:4px;}
+.sec-text{font-size:12.5px;color:#333;line-height:1.6;}
+.sec-text strong{color:var(--ink);}
+
+/* Metrics 3-col grid inside accordion */
+.acc-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;}
+.m-box{background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;}
+.m-label{font-family:var(--mono);font-size:9px;color:#999;letter-spacing:.4px;text-transform:uppercase;margin-bottom:5px;}
+.m-row{font-size:11px;line-height:1.6;}
+.m-row.b{color:#2D6A4F;}.m-row.g{color:#1A3A5C;}.m-row.w{color:var(--accent);}
+
+/* Timeline pills */
+.acc-timeline{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+.tl-pill{flex:1;min-width:100px;background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:7px 10px;}
+.tl-phase{font-family:var(--mono);font-size:9px;color:#999;letter-spacing:.4px;text-transform:uppercase;}
+.tl-text{font-size:11.5px;color:#333;margin-top:3px;line-height:1.4;}
+
+/* Execution steps */
+.exec-steps{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.exec-step{display:flex;gap:10px;align-items:flex-start;}
+.step-num{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--accent);min-width:18px;padding-top:2px;}
+.step-text{font-size:12px;color:#333;line-height:1.5;}
+.step-text strong{color:var(--ink);}
+
+/* Coloured left-border per pillar */
+.acc-item.p-elim{border-left:4px solid var(--elim);}
+.acc-item.p-reduce{border-left:4px solid var(--reduce);}
+.acc-item.p-raise{border-left:4px solid var(--raise);}
+.acc-item.p-create{border-left:4px solid var(--create);}
+
+/* Tab strip sub-stats */
+.tab-strip-meta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+.tsm-item{font-family:var(--mono);font-size:11px;color:#666;}
+.tsm-item strong{color:var(--ink);}
+
+/* FOOTER */
+.page-footer{margin-top:24px;border-top:1px solid var(--rule);padding-top:12px;font-size:11px;color:#888;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1><span>Apollo Tyres Ltd — Internal Strategy Document</span>Consolidated Capital Optimization Project Directory</h1>
+  <div class="chips">
+    <div class="chip">12 Projects</div>
+    <div class="chip">PCR · TBR · OHT</div>
+    <div class="chip hot">₹1,890 Cr+ Unlocked</div>
+  </div>
+</header>
+
+<nav class="tab-bar">
+  <button class="tab-btn active"        onclick="showTab('overview',this)">Overview</button>
+  <button class="tab-btn t-elim"        onclick="showTab('elim',this)">✕ Eliminate</button>
+  <button class="tab-btn t-reduce"      onclick="showTab('reduce',this)">↓ Reduce</button>
+  <button class="tab-btn t-raise"       onclick="showTab('raise',this)">↑ Raise</button>
+  <button class="tab-btn t-create"      onclick="showTab('create',this)">★ Create</button>
+</nav>
+
+<!-- ══ TAB: OVERVIEW ══════════════════════════════════════════ -->
+<div id="tab-overview" class="tab-panel active">
+  <div class="legend">
+    <div class="leg-item"><span class="leg-dot" style="background:var(--elim)"></span>Eliminate — Remove waste &amp; speculative forecasts</div>
+    <div class="leg-item"><span class="leg-dot" style="background:var(--reduce)"></span>Reduce — Compress process friction</div>
+    <div class="leg-item"><span class="leg-dot" style="background:var(--raise)"></span>Raise — Amplify high-margin pull</div>
+    <div class="leg-item"><span class="leg-dot" style="background:var(--create)"></span>Create — Build new capabilities</div>
+  </div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th class="w-id">#</th><th class="w-name">Project Name</th><th class="w-seg">Segment</th>
+      <th class="w-errc">ERRC</th><th class="w-cap">Capital Unlocked</th>
+      <th class="w-kpi">Structural KPI</th><th class="w-impact">Core Impact</th><th class="w-inv">Investment</th>
+    </tr></thead>
+    <tbody id="overview-tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- ══ TAB: ELIMINATE ════════════════════════════════════════ -->
+<div id="tab-elim" class="tab-panel">
+  <div class="tab-strip-meta" id="elim-meta"></div>
+  <div class="acc-wrap" id="elim-acc"></div>
+</div>
+
+<!-- ══ TAB: REDUCE ═══════════════════════════════════════════ -->
+<div id="tab-reduce" class="tab-panel">
+  <div class="tab-strip-meta" id="reduce-meta"></div>
+  <div class="acc-wrap" id="reduce-acc"></div>
+</div>
+
+<!-- ══ TAB: RAISE ════════════════════════════════════════════ -->
+<div id="tab-raise" class="tab-panel">
+  <div class="tab-strip-meta" id="raise-meta"></div>
+  <div class="acc-wrap" id="raise-acc"></div>
+</div>
+
+<!-- ══ TAB: CREATE ═══════════════════════════════════════════ -->
+<div id="tab-create" class="tab-panel">
+  <div class="tab-strip-meta" id="create-meta"></div>
+  <div class="acc-wrap" id="create-acc"></div>
+</div>
+
+<footer class="page-footer">
+  <span>Apollo Tyres Ltd · Capital Optimization Working Group</span>
+  <span>DIO Benchmark: 115d (Sector) · Current: 127.5d · Target: 82d</span>
+</footer>
+
+<script>
+// ══ TAB SWITCHER ═══════════════════════════════════════════════
+function showTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleAcc(el){el.classList.toggle('open');}
+
+// ══ HELPERS ════════════════════════════════════════════════════
+const SYM={elim:'✕',reduce:'↓',raise:'↑',create:'★'};
+const LBL={elim:'Eliminate',reduce:'Reduce',raise:'Raise',create:'Create'};
+const COL={elim:'var(--elim)',reduce:'var(--reduce)',raise:'var(--raise)',create:'var(--create)'};
+const PILLAR_LABEL={elim:'ELIMINATE',reduce:'REDUCE',raise:'RAISE',create:'CREATE'};
+
+// ══ PROJECT DATA ════════════════════════════════════════════════
+// Fields: id,pillar,name,seg,capital,capitalSub,kpi,impact,inv,invSub,
+//         action,baseline,diagnosis,risk,mitigation,benchmark,rootCause,opportunity,
+//         steps:[{title,text}], metrics:[{label,base,best,worst}], timeline:[{phase,text}]
+const PROJECTS=[
+
+  // ─── ELIMINATE ───────────────────────────────────────────────
+  {id:'E1',pillar:'elim',
+   name:'Global Mixer Velocity Standardization & PLC Optimization',
+   seg:'PCR/SUV',capital:'₹546 Cr',capitalSub:'WIP & Raw Compression',
+   kpi:'+10–12% Compounding Capacity',impact:'Standardizes all 45 global mixer PLC cycles; ties compound output to real-time curing queue via smart interlocks.',
+   inv:'₹1.80–2.50 Cr',invSub:'PLC rewrites, sensor calibrations, engineering labor',
+   action:'Standardise mechanical processing speeds and PLC batch cycles across all 45 global mixing lines, shifting from localized variations to an automated system tied directly to downstream curing capacity.',
+   baseline:'45 mixers across India (Chennai, Limda, AP) and Europe (Hungary) running identical formulations (NR, SR, carbon black, chemical precursors). Operators control batch cycles locally at varying speeds based on historical preferences — not system-wide constraints. Variable setup creates erratic, uncoordinated pipelines of green uncured PCR tyres waiting on the shop floor.',
+   diagnosis:'Strategy of Exclusion pushed UUHP past 45–52% of European volume. These high-diameter tyres carry a Premium Resource Penalty — longer press cycles and manual mold adjustments. Mixing rooms continued compounding at rapid, non-standardized speeds, slamming green tyre output into a physical wall at the curing stage. Result: 73.9% WIP surge to ₹2,731 Mn, leaving zero buffer space at Indian facilities (high-80s utilization) and forcing expensive warehouse expansion in Hungary.',
+   risk:'Forced standardized speeds can alter internal compound shear stress, causing green tyre uniformity variations or rubber scrap spikes.',
+   mitigation:'Real-time thermal sensors at mixer discharge gates. Dynamic PLC batch alarms adjust blade speeds instantly if rubber temperatures exceed compound parameters.',
+   benchmark:'Tier-1 manufacturers lock compounding loops to final vulcanization velocity, keeping floor-level WIP below 1.2% of annual sales. Apollo\'s uncoordinated setup pushed WIP to 1.7% of sales.',
+   rootCause:'Decoupling of raw material compounding from real-time downstream curing capacity. Mixing assets ran independent schedules based on raw volumetric capacity while the product mix shifted to longer-cycle premium tyres.',
+   opportunity:'Postpones warehouse sorting conveyor optimization in India — a secondary upgrade that does not address the ₹2,731 Mn WIP bottleneck. Standardizing mixers delivers vastly superior return on operational effort.',
+   steps:[
+     {title:'Map Mixer Micro-Logs',text:'Extract historical batch reports and sensor time-series data from all 45 global mixers to identify exact feed-rate and rotational-speed variations.'},
+     {title:'Overhaul PLC Code',text:'Program standardized batch execution cycle times into plant controllers, synchronizing mixing velocities across all facilities.'},
+     {title:'Deploy Smart Interlocking',text:'Establish automated logic parameters linking mixing room dumps directly to real-time curing press queue counts.'},
+     {title:'Implement Flow Throttling',text:'Program MES to automatically slow mixer outputs by 20% if downstream PCR curing lines experience extended setup downtime or complex UUHP mold changeovers.'}
+   ],
+   metrics:[
+     {label:'WIP Inventory',base:'−20% (~₹546 Mn released)',best:'−35% (~₹955 Mn released)',worst:'0% — mixers stay decoupled'},
+     {label:'Mixing Room Capacity',base:'+10–12% via std cycles',best:'+15% via full tuning',worst:'−5% from changeover friction'},
+     {label:'DIO Impact',base:'−4.5 Days',best:'−7.0 Days',worst:'+2.0 Days (safety buffer)'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Baseline speed audit across 45 mixers; rewrite PLC tracking codes'},
+     {phase:'Mo 1–3',text:'Live interlocking at Indian facilities; throttle mixing during curing changeovers'},
+     {phase:'Mo 3–6',text:'Integrate AI Digital Twin models with automated mixing loops'}
+   ]
+  },
+
+  {id:'E2',pillar:'elim',
+   name:'Decoupled Factory Production & Replacement Market Pull-Matching',
+   seg:'TBR',capital:'₹120 Cr',capitalSub:'Trapped Finished Goods',
+   kpi:'−25% FG Warehouse Stock',impact:'Removes Truck OEM forward forecasts from master schedule; shifts all TBR planning to strict aftermarket dealer pull signals.',
+   inv:'₹1.50–2.50 Cr',invSub:'ERP demand-sensing module, live channel data links',
+   action:'Decouple factory production planning from volatile Truck OEM forecasts. Implement strict Aftermarket Dealer Pull synchronization for all TBR manufacturing assets, halting speculative finished goods accumulation and shifting factory floor scheduling to real-time replacement channel pull.',
+   baseline:'Apollo holds 28–29% market share in Indian TBR replacement — the primary profitable channel with an 18-day receivable cycle. Historically, manufacturing schedules blend replacement metrics with forward OEM volume estimates. Production floor managers treat OEM commitments as guaranteed volume blocks, scheduling multi-week compound mixing and curing setups in advance to optimize local plant utilization numbers.',
+   diagnosis:'Truck OEM segment entered double-digit negative decline. Management intentionally vacated low-margin trailer accounts to defend 15%+ ROCE, deepening the slide. Supply teams failed to throttle factory velocities during the downturn — heavy TBR tyres kept rolling out into an absorptionless market, driving 127.5 DIO and a 47% drop in Operating Cash Flow.',
+   risk:'Strict pull model leaves the company exposed to stockout risk if a major OEM suddenly ramps vehicle assembly.',
+   mitigation:'Maintain a dedicated 15% flex-capacity slice in the Andhra Pradesh plant, activatable via Singapore hub raw compound bases without disrupting the aftermarket supply chain.',
+   benchmark:'Top-tier commercial tyre makers operate under 22 finished goods days using demand-driven scheduling. Apollo\'s forecast-driven model significantly exceeded this threshold during the OEM downturn.',
+   rootCause:'Breakdown in coordination between production scheduling and real-world market consumption. Manufacturing lines ran on old OEM volume targets after management had strategically exited those accounts.',
+   opportunity:'Reallocates planning teams away from a long-term logistics study for European PCR export channels — a segment already operating with healthy margins and normal inventories. Attacking the domestic TBR trapped cash delivers a far greater financial return.',
+   steps:[
+     {title:'Isolate Planning Streams',text:'Strip all speculative Truck OEM forward estimates from the master scheduling program, shifting OEM orders to a strict Build-to-Order framework.'},
+     {title:'Integrate Aftermarket Live Feeds',text:'Connect the primary plant scheduling ledger directly to aftermarket regional distribution center (RDC) inventories to capture actual replacement market demand.'},
+     {title:'Establish Dynamic Buffer Thresholds',text:'Set minimum and maximum inventory limits for replacement tyre SKUs at regional hubs, matching production to the channel\'s highly efficient 18-day receivable cycle.'},
+     {title:'Set Up Automated MES Interlocks',text:'Configure the MES to automatically halt TBR compound mixing if the regional distribution network\'s inventory for a specific SKU crosses its maximum safety buffer.'}
+   ],
+   metrics:[
+     {label:'Finished Goods Stock',base:'−25% trapped TBR stock',best:'−40% via full aftermarket sync',worst:'+5% if OEM contracts carry penalties'},
+     {label:'DIO Impact',base:'−6.5 Days',best:'−11.0 Days',worst:'+3.0 Days (overproduction)'},
+     {label:'OCF Recovery',base:'₹1.20 Bn liberated',best:'₹2.10 Bn in 90 days',worst:'₹0 — cash stays trapped'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Erase OEM forward curves from planning; mandate production ceiling on slow SKUs'},
+     {phase:'Mo 1–3',text:'Link floor scheduling to live replacement dealer networks (top 5 India zones)'},
+     {phase:'Mo 3–6',text:'Transition entire global TBR footprint to demand-driven pull model'}
+   ]
+  },
+
+  {id:'E3',pillar:'elim',
+   name:'Low-Turn European OHT & Space Master SKU Production Freeze',
+   seg:'OHT',capital:'₹150 Cr',capitalSub:'Stagnant Finished Stock',
+   kpi:'−30% Farm FG Stock (90 Days)',impact:'Freezes 18 underperforming European agricultural OHT sizes and Space Master variants to stop capital drain during rural demand downturn.',
+   inv:'₹0.50–1.00 Cr',invSub:'Stop-order scheduling administration, SKU parameter updates',
+   action:'Implement an immediate, targeted production freeze on slow-turning agricultural SKUs across Europe and India to clear Hungary warehouse space and prevent high-cost material pile-up during the structural rural demand downturn.',
+   baseline:'European agricultural aftermarket dropped 30–35%. Despite adding 18 new OHT SKUs to revive sales, volumes remain heavily negative. Hungary plant at ~90% utilization, forcing expensive warehouse expansion just to store unsold farm tyres. Indian agri hubs also experiencing slow channel velocity across the Space Master size range.',
+   diagnosis:'Production lines failed to adjust to the rural market downturn. Shared mixers kept churning heavy farm tyre compounds at full quarterly targets. Result: massive unsold finished goods backing up across European regional distribution centers, contributing to ₹5,131 Cr consolidated inventory bloat and preventing floor space from absorbing the ₹2,731 Mn WIP surge.',
+   risk:'Freezing production lines during a downturn may trigger internal capacity under-utilization flags, creating pressure to restart lines prematurely.',
+   mitigation:'Redirect freed mixing chamber time to high-demand 14–17+ inch premium passenger lines, maintaining plant utilization numbers while shifting the output mix toward profitable segments (see Project 10).',
+   benchmark:'Leading OHT manufacturers halt low-turn SKUs within 30 days of detecting sustained negative channel velocity using real-time distribution data triggers. Apollo\'s batch-reporting model allowed stock to pile up over multiple quarters.',
+   rootCause:'Rigid quarterly production quotas and the absence of live warehouse inventory signals allowed unsellable farm tyres to accumulate before corrective action could be taken.',
+   opportunity:'Redirects OHT line engineering resource away from adding further SKU variants — a strategy that has not reversed the 30–35% volume decline — and toward clearing existing deadweight stock that is consuming cash and warehouse space.',
+   steps:[
+     {title:'Issue SKU Freeze Orders',text:'Implement immediate production stop on the 18 underperforming European OHT lines and domestic Space Master variations.'},
+     {title:'Pivot Shared Mixing Capacity',text:'Divert shared compounding mixers from heavy farm tyre compounds to high-demand premium 14–17+ inch SUV lines (coordinated with Project 10).'},
+     {title:'Optimize Sourcing Logistics',text:'Adjust delivery schedules through the Singapore office for heavy-grade natural rubber, keeping raw stocks lean during the sales slowdown.'},
+     {title:'Accelerate Alternate Supplier Onboarding',text:'Use virtual Gemba live video audits to screen regional sustainable rubber suppliers under ASNRP/ISO 20400 compliance without long physical travel delays.'}
+   ],
+   metrics:[
+     {label:'Agri FG Stock',base:'−30% in 90 days',best:'−45% via complete SKU exit',worst:'0% if contractual floor volumes apply'},
+     {label:'Hungary Warehouse',base:'Below 82% capacity',best:'70% via rapid stock clearing',worst:'Exceeds 90% forcing expansion'},
+     {label:'DIO Impact',base:'−3.5 Days',best:'−6.0 Days',worst:'+1.0 Day via continued push'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Freeze orders on 18 underperforming OHT lines and Space Master variants'},
+     {phase:'Mo 1–3',text:'Redirect shared mixer capacity to premium PCR/SUV lines; adjust Singapore delivery schedules'},
+     {phase:'Mo 3–12',text:'Build alternate sustainable vendor pool via virtual Gemba audits (Project 12)'}
+   ]
+  },
+
+  {id:'E4',pillar:'elim',
+   name:'Masterbatch Intermediate Storage Elimination via Direct-Drop Compounding',
+   seg:'PCR/OHT',capital:'₹210 Cr',capitalSub:'Floor WIP Stock Elimination',
+   kpi:'−18% Intermediate Compound Holding Days',impact:'Eliminates the physical floor storage of Master Batch rubber between the primary and final mixing passes by deploying direct-drop transfer gates, removing the largest single source of intermediate WIP on the factory floor.',
+   inv:'₹2.20–3.00 Cr',invSub:'Transfer gate hardware, mixer discharge chute modification, inline viscosity sensors',
+   action:'Eliminate the intermediate storage and manual cooling stage between the Master Batch and Final Batch mixing passes by installing automated direct-drop transfer gates on all primary compounding mixers, removing the need to eject, transport, and stage intermediate rubber compound on the factory floor.',
+   baseline:'Under the current multi-pass sequence, Master Batch rubber is ejected from the primary mixer onto a mill, transported to cooling lines, staged on the factory floor for maturation, and then manually reloaded into a secondary mixer for the Final Batch. This staging loop occupies significant factory floor real estate across all Indian and Hungarian plants, creating a visible, physical pool of intermediate compound that cannot be moved or cured until the cooling cycle completes.',
+   diagnosis:'The intermediate floor staging pool is the earliest and most upstream source of the ₹2,731 Mn WIP explosion. It precedes the curing stage bottleneck entirely — meaning even if curing press throughput improves, compound continues to pile up at the staging area if the two-pass storage requirement is not eliminated. At high-80s plant utilization in India, there is physically no room for this cooling material, forcing operators to slow primary mixing velocities to prevent floor congestion, which paradoxically reduces total throughput.',
+   risk:'Skipping intermediate cooling may allow residual heat from the master batch to pre-scorch the final vulcanizing agents when they are added in the secondary pass, causing compound degradation and increased scrap rates.',
+   mitigation:'Install automated temperature-monitoring gates at the transfer point. If the master batch temperature exceeds the safe transfer threshold, an automated holding latch delays the drop until the compound cools to the specified parameter, without requiring ejection to the floor.',
+   benchmark:'Advanced compounder facilities in Germany and Japan process over 65% of passenger compound volume through direct-drop or gravity-feed tandem configurations, eliminating floor staging entirely for standard formulations.',
+   rootCause:'The multi-pass staging process was designed for an era of lower plant utilization when floor space was abundant. As plant utilization climbed into the high 80s and the product mix shifted to complex premium formulations requiring more precise compound uniformity, the staging loop became a structural bottleneck rather than a quality control step.',
+   opportunity:'Prioritizing this project postpones a secondary upgrade to the overhead raw material conveyor systems at the Limda facility. However, raw material conveyor upgrades have no impact on the intermediate WIP floor pool, which is the direct driver of the compound backlog. This project targets the root source of floor congestion upstream of the curing stage, delivering a higher-priority return on engineering effort.',
+   steps:[
+     {title:'Audit Transfer Compatibility',text:'Map thermal profiles and discharge gate geometries across all primary mixers to identify which units can accommodate direct-drop transfer gates without structural modification.'},
+     {title:'Install Transfer Gate Hardware',text:'Retrofit automated transfer gates with temperature-monitoring latches at the discharge chutes of compatible primary mixers at AP, Chennai, and Hungary.'},
+     {title:'Program Thermal Hold Logic',text:'Code automated temperature threshold parameters into the PLC: if master batch temperature exceeds the safe transfer limit, the gate holds until cooling is confirmed before releasing to the secondary mixer.'},
+     {title:'Decommission Floor Staging Areas',text:'Progressively decommission intermediate compound staging areas as direct-drop lines go live, reclaiming floor real estate for green tyre buffer management.'}
+   ],
+   metrics:[
+     {label:'Intermediate WIP Stock',base:'−18% intermediate compound holding days',best:'−30% via full direct-drop rollout',worst:'0% if thermal scorching reverts process'},
+     {label:'Floor Space Recovered',base:'12% factory floor area reclaimed',best:'20% via full staging decommission',worst:'0% if pilot lines require expanded cooling'},
+     {label:'DIO Impact',base:'−3.0 Days',best:'−5.5 Days',worst:'+1.0 Day via quality holds'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Transfer gate compatibility audit across primary mixers at AP and Hungary; begin hardware procurement'},
+     {phase:'Mo 1–3',text:'Install and commission transfer gates on first 10 compatible mixer units; activate PLC thermal hold logic'},
+     {phase:'Mo 3–6',text:'Full rollout across all compatible global mixers; decommission floor staging areas progressively'}
+   ]
+  },
+
+  // ─── REDUCE ───────────────────────────────────────────────────
+  {id:'R5',pillar:'reduce',
+   name:'Dual-Hub Single-Pass Mixing Integration for Soft SUV Compounds',
+   seg:'PCR/SUV',capital:'₹320 Cr',capitalSub:'Intermediate Floor Stock',
+   kpi:'−15% Compound Cycle Time',impact:'Tandem mixing drops masterbatch directly into final bowl, eliminating floor cooling and staging delays.',
+   inv:'₹2.50–3.50 Cr',invSub:'Tandem pipe modifications, inline rheometer testing gear',
+   action:'Integrate Single Pass Mixing Technology across all PCR tandem mixing assets to eliminate the multi-stage cooling, staging, and floor storage of intermediate rubber compounds.',
+   baseline:'High-performance soft PCR compounds processed through a multi-pass sequence: Master Batch → eject → cool → stage on floor → reload into secondary mixer for Final Batch. This loop traps massive volumes of material as stagnant floor inventory between the two passes.',
+   diagnosis:'Soft passenger compounds for 14–17+ inch and UUHP tyres require extensive processing for uniform distribution. Traditional multi-stage aging leaves intermediate batches sitting across factory footprints, directly driving the ₹2,731 Mn WIP surge. India PCR plants at high 80s utilization leave zero floor space to buffer this cooling material.',
+   risk:'Skipping intermediate cooling and adding chemicals to hot master compound significantly increases the risk of thermal scorching or premature vulcanization inside the mixer.',
+   mitigation:'Automated cold-oil injection valves in the lower tandem chamber. If temperature sensors detect a heat spike, the system instantly injects a cooling dose to stabilize the mix before damage occurs.',
+   benchmark:'Advanced tier-1 plants process over 75% of soft passenger compounds via single-pass tandem configurations. Apollo currently routes less than 15% through single-pass paths.',
+   rootCause:'Traditional multi-pass setup creates an intentional delay requiring material to be cooled and stored on the floor. Strategy of Exclusion shifted volume to large premium tyres without upgrading the compounding process to match.',
+   opportunity:'Pauses planned software updates to older bias-tyre machinery in Kerala — facilities handling low-margin mass products not causing the current cash constraints. Prioritizing single-pass technology directly addresses the ₹2,731 Mn WIP bottleneck where the financial impact is greatest.',
+   steps:[
+     {title:'Configure Tandem Lines',text:'Re-engineer compounding lines at PCR hubs to link upper and lower mixing chambers directly, forming an integrated tandem setup.'},
+     {title:'Program Direct Material Transfer',text:'Adjust control systems to drop initial compound from the master chamber directly into the final mixing bowl, removing the eject-cool-stage loop.'},
+     {title:'Optimize Thermal Settings',text:'Deploy automated temperature-control profiles within the lower tandem chamber, allowing final vulcanization chemicals to be mixed into hot master rubber safely without premature scorching.'},
+     {title:'Install Real-Time Inspection',text:'Set up inline testing equipment between the tandem discharge gate and extruder lines to check compound consistency on the fly, keeping flow continuous without manual lab delays.'}
+   ],
+   metrics:[
+     {label:'Cycle Time',base:'−15% compression',best:'−22% via full line balance',worst:'+2% from batch scorching'},
+     {label:'Intermediate Stock Cash',base:'₹320 Mn released',best:'₹490 Mn via full rollout',worst:'₹0 — reverts to multi-pass'},
+     {label:'PCR Floor WIP',base:'−25% footprint',best:'−40% compression',worst:'+5% from quality holds'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Mechanical line audits on tandem-capable mixers at AP and Hungary'},
+     {phase:'Mo 1–3',text:'Update control codes; activate single-pass logic on first three pilot lines'},
+     {phase:'Mo 3–6',text:'Roll out master mixing stage reduction globally; connect to downstream extruders'}
+   ]
+  },
+
+  {id:'R6',pillar:'reduce',
+   name:'High-Diameter UUHP Mold Grouping & Changeover Simplification',
+   seg:'PCR/SUV',capital:'₹45 Cr',capitalSub:'Green Tyre Stock Compression',
+   kpi:'−30% Press Changeover Time',impact:'Groups 14–17+ inch UUHP patterns into 48-hr continuous production blocks using SMED retooling routines and automated press programming.',
+   inv:'₹1.50–2.20 Cr',invSub:'Quick-locking mold blocks, offline induction pre-heaters',
+   action:'Implement structured UUHP Mold Grouping and Changeover Simplification across all PCR vulcanization lines, organizing premium diameter sizes into unified 48-hour production blocks and deploying SMED methodology.',
+   baseline:'Low-margin 12–13 inch PCR lines phased out. UUHP now represents 47–52% of European volumes. Curing presses currently scheduled on immediate aftermarket orders, forcing frequent uncoordinated mold changes throughout the day.',
+   diagnosis:'Premium Resource Penalty: high-diameter SUV and UUHP tyres require longer press cycles and complex mold configurations. Without a grouping framework, changeover complexity has skyrocketed — individual presses sit idle for hours. This feeds the ₹2,731 Mn WIP pile-up as 45 mixers push green tyres into a curing bottleneck.',
+   risk:'Long continuous runs increase compound residue in mold vents, causing surface imperfections on high-performance UUHP tyres or accelerating mold wear.',
+   mitigation:'Automated non-destructive ultrasonic cleaning cycles integrated into the master grouping schedule. Every 48-hour window completion routes the mold through an offline laser-cleaning booth.',
+   benchmark:'Advanced facilities limit high-diameter mold changeover to under 45 minutes using standardized tooling and synchronized scheduling blocks. Apollo\'s ad-hoc model allows changeovers exceeding 150 minutes.',
+   rootCause:'Sharp disconnect between the high-margin product strategy and physical plant floor retooling capabilities. Vulcanization shop floor continued running flexible small-batch schedules without updating its retooling infrastructure.',
+   opportunity:'Postpones secondary optimization of final inspection conveyors at older bias-tyre facilities — low-margin lines not causing current cash constraints. Directing engineering talent to the premium PCR curing bottleneck delivers far greater financial return per hour.',
+   steps:[
+     {title:'Standardize Mold Dimensions',text:'Audit and group all premium SUV and UUHP mold patterns into unified high-diameter envelope categories (e.g., 14–15 inch blocks and 17+ inch SUV runs).'},
+     {title:'Establish Unified Batch Windows',text:'Restructure plant scheduling software to enforce mandatory 48-hour continuous runs for specific diameter groups, banning mid-shift size alterations.'},
+     {title:'Implement SMED Retooling',text:'Deploy Single-Minute Exchange of Die methodologies, ensuring all replacement molds, fasteners, and press setting profiles are pre-heated and staged before the active line stops.'},
+     {title:'Automate Press Programming',text:'Integrate digital barcode scanners onto curing presses to instantly upload new temperature, pressure, and drain-time profiles into the PLC when a mold is bolted down.'}
+   ],
+   metrics:[
+     {label:'Press Downtime',base:'−30% changeover time',best:'−45% via full SMED automation',worst:'+5% from tool stripping'},
+     {label:'WIP Cash Released',base:'₹45 Cr by clearing green stock',best:'₹75 Cr via optimized flow',worst:'₹0 — presses stay bottlenecked'},
+     {label:'Asset Productivity',base:'+4.5% premium press output',best:'+7.5% via continuous runs',worst:'−2% from extended tooling holds'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Audit and group all premium mold dimensions into 14–17+ inch and SUV envelope categories'},
+     {phase:'Mo 1–3',text:'Update MES scheduling rules; run SMED training at Hungary pilot lines'},
+     {phase:'Mo 3–6',text:'Deploy hydraulic quick-lock hardware globally; integrate press scheduling with mixing loops'}
+   ]
+  },
+
+  {id:'R7',pillar:'reduce',
+   name:'Vulcanization Press Dynamic Drain-Time Controls for Stick-up Prevention',
+   seg:'TBR',capital:'₹35 Cr',capitalSub:'Vulcanization Shop Floor',
+   kpi:'−85% Top-Mold Stick-Up Incidents',impact:'Sensor-driven variable venting profiles and dynamic drain-times replace fixed timers, preventing tyre adhesion and eliminating bladder ring failures.',
+   inv:'₹2.00–2.80 Cr',invSub:'Upper-dome pressure sensors, dynamic pneumatic valves',
+   action:'Deploy automated Dynamic Drain-Time control algorithms and high-conductivity bladder insulation kits across all TBR vulcanization press networks to eliminate stick-up incidents and accelerate curing extraction cycles.',
+   baseline:'Heavy TBR presses run rigid fixed-timer vulcanization cycles. Once heating ends, the press auto-opens at a set time. This inflexible setup ignores real-time internal moisture and condensate conditions.',
+   diagnosis:'Heavy TBR tyres frequently stick to the top mold during press opening — tearing green rubber and exerting severe strain on bladder rings. Each incident forces a line pause for manual extraction and bladder replacement. Mixers keep feeding green TBR batches into a disrupted curing stage, adding to the WIP backlog.',
+   risk:'If the automated system shortens drain time excessively, condensate backup lowers internal press temperature, leading to under-cured structural layers in the commercial tyre.',
+   mitigation:'Hardcode minimum vent limits into PLC software. If thermal sensors detect an internal heat drop during a compressed drain run, a safety override activates auxiliary steam injection to complete vulcanization safely.',
+   benchmark:'Leading tier-1 commercial tyre factories experience fewer than 0.5 stick-up incidents per 10,000 runs using real-time sensor-driven venting. Apollo\'s fixed-timer cycles allow frequent disruptions.',
+   rootCause:'Technical bottleneck at the vulcanization stage. Strategy of Exclusion shifted capacity to high-performing radial lines but left curing equipment running on rigid fixed timers unable to handle TBR stick-up tendencies.',
+   opportunity:'Maintenance teams delay a secondary efficiency layout update for the raw material storage yard at older bias-tyre facilities — low-margin lines not driving the WIP crisis. Directing automation talent to the premium radial curing bottleneck delivers maximum financial return per engineering hour.',
+   steps:[
+     {title:'Install Live Pressure Sensors',text:'Retrofit digital pressure transducers and condensate sensors onto the upper dome assembly of all heavy commercial TBR curing presses.'},
+     {title:'Program Dynamic Venting Code',text:'Rewrite PLC logic to establish a variable vent window, tracking internal moisture and adjusting drain times dynamically to ensure a clean top-mold release before press splits.'},
+     {title:'Retrofit High-Conductivity Bladders',text:'Replace standard curing bladders with advanced high-conductivity coated variants to distribute heat evenly and prevent localized sticky spots on the tyre tread.'},
+     {title:'Set Up Automated Ejection Triggers',text:'Link electronic limit switches to automated mold ejector pins, triggering a synchronized pneumatic pulse that gently pushes the cured TBR tyre downward as the press opens.'}
+   ],
+   metrics:[
+     {label:'Stick-Up Incidents',base:'−85% adhesion events',best:'−98% via full vent sync',worst:'0% — fixed timers remain'},
+     {label:'WIP Cash Released',base:'₹35 Cr by unblocking floor',best:'₹60 Cr via optimized flow',worst:'₹0 — TBR stays trapped'},
+     {label:'Press Utilization',base:'+3.2% active curing hours',best:'+5.5% via lower maintenance',worst:'−1.5% from sensor setup holds'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Map stick-up frequencies across TBR press lines; complete vent valve engineering schematics'},
+     {phase:'Mo 1–3',text:'Update PLC codes; retrofit high-conductivity bladder kits on pilot Indian press lines'},
+     {phase:'Mo 3–6',text:'Scale dynamic drain-time controls globally across all commercial vehicle lines'}
+   ]
+  },
+
+  // ─── RAISE ────────────────────────────────────────────────────
+  {id:'R8',pillar:'raise',
+   name:'Aftermarket Capacity Redirection for Rapid Cash Conversion',
+   seg:'TBR',capital:'₹180 Cr',capitalSub:'Organic Liquidity Acceleration',
+   kpi:'−9 Days Cash Conversion Cycle',impact:'Pivots curing presses from negative-growth OEM contracts into the lucrative 18-day replacement market collection cycle.',
+   inv:'₹1.00–1.80 Cr',invSub:'Dynamic scheduler platforms, cross-channel logistics tools',
+   action:'Pivot factory floor assembly and vulcanization press configurations away from sluggish Truck OEM contracts, redirecting capacity to the high-margin domestic TBR aftermarket network.',
+   baseline:'Apollo commands 28–29% market share in Indian TBR replacement — a sacrosanct, lucrative channel with an 18-day cash collection cycle. Capacity allocation between OEM and Aftermarket is managed on a fixed seasonal ratio with weeks-long manual adjustment lag.',
+   diagnosis:'Indian commercial vehicle OEM segment entered deep double-digit decline. Manufacturing schedules failed to shift, heavy TBR tyres kept rolling off lines into unsellable OEM slots, blowing consolidated inventory to ₹5,131 Cr and dropping OCF by 47%. Meanwhile, the profitable replacement market faced spot stockouts from capacity being tied up in slow OEM stock.',
+   risk:'Rapidly shifting capacity away from long-term OEM contracts can trigger contractual penalties or damage relationships with major assembly plants.',
+   mitigation:'Maintain a lean 5% bare-minimum safety buffer within the master schedule to handle absolute legal OEM volume requirements without slowing replacement market flow.',
+   benchmark:'Advanced tyre manufacturers shift up to 30% of plant capacity between OEM and Aftermarket tooling within 72 hours. Apollo\'s rigid channel ratios kept capacity tied in negative-growth OEM lines for months.',
+   rootCause:'Slow, uncoordinated operational response to product allocation changes between sales channels. Factory floor kept pumping OEM stock after management had strategically decided to exit those accounts.',
+   opportunity:'Logistics teams delay a secondary efficiency study for the raw material storage yard at older bias-tyre facilities — low-margin lines not driving the ₹5,131 Cr inventory bloat. Directing talent to the premium radial sector maximizes financial return per hour invested.',
+   steps:[
+     {title:'Halt OEM Line Runs',text:'Issue immediate scheduling freeze on all curing presses assigned to low-margin or negative-growth Truck OEM accounts.'},
+     {title:'Swap Mold Tooling',text:'Re-tool freed vulcanization lines within 48 hours, swapping OEM specifications for high-demand, rapid-turning replacement market tyre patterns.'},
+     {title:'Adjust Compound Feed-Rates',text:'Instruct mixing rooms to reroute heavy commercial rubber batches directly to newly configured aftermarket press lines, aligning compounding flow with replacement demand.'},
+     {title:'Connect to Dealer Pull',text:'Link daily production output directly to regional dealer network\'s immediate order books, channeling finished tyres into the highly efficient 18-day cash collection loop.'}
+   ],
+   metrics:[
+     {label:'Trapped Finished Stock',base:'₹180 Cr released',best:'₹310 Cr via complete dealer sync',worst:'₹0 — capacity stays in slow OEM'},
+     {label:'Cash Conversion Cycle',base:'−9 Days compression',best:'−14 Days',worst:'+3 Days via extended OEM credit'},
+     {label:'Operating Leverage',base:'+180 bps margin expansion',best:'+290 bps via premium mix',worst:'−50 bps from re-tooling downtime'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Freeze low-margin OEM runs; re-tool first 15 curing presses for replacement SKUs'},
+     {phase:'Mo 1–3',text:'Route daily plant output into high-priority aftermarket regional hubs across India transport corridors'},
+     {phase:'Mo 3–6',text:'Integrate AI Digital Twin with dealer network to auto-shift capacity based on margin trends'}
+   ]
+  },
+
+  {id:'R9',pillar:'raise',
+   name:'Singapore Hub Index-Linked Sourcing Contract Split',
+   seg:'TBR/Raw',capital:'₹245 Cr',capitalSub:'Raw Material Holding Compression',
+   kpi:'P&L Lag: 90d → 30d',impact:'Splits NR procurement: 60% fixed quarterly base + 40% rolling monthly index-linked to SICOM/TOCOM, softening the three-month margin lag impact.',
+   inv:'₹1.00–1.50 Cr',invSub:'Risk data tracking platforms, index-linked legal framework updates',
+   action:'Restructure Singapore hub procurement to split raw material volume commitments — 60% fixed quarterly base for supply security, 40% shifted to dynamic monthly index-linked pricing bands.',
+   baseline:'Singapore procurement hub handles 63% of global NR volume (up from 50% in FY19), sourcing from Thailand and Indonesia on rigid fixed-quarter contracts. Company explicitly eschews financial derivatives, relying entirely on physical buying with Indian factory inventories at a tight 7–12 days.',
+   diagnosis:'NR prices hit a 10-year peak of ₹247–250/kg. Under fixed quarterly contracts, Apollo purchased massive volumes at peak rates long after international spot prices eased. The three-month P&L lag caused a 300 bps contraction in standalone gross margins, driving ₹5,131 Cr consolidated inventory and forcing a ₹440 Cr short-term borrowing drawdown.',
+   risk:'Shifting to monthly index-linked contracts exposes the company to sudden commodity price spikes or local supply shortages if spot markets face unexpected shocks.',
+   mitigation:'Maintain a solid 60% base volume in long-term quarterly contracts as a guaranteed supply anchor. If extreme price surges hit, procurement desk instantly freezes spot buying and relies entirely on the fixed-price base volume.',
+   benchmark:'Advanced tier-1 manufacturing hubs manage over 50% of raw material portfolios using index-linked short-term contract structures. Apollo\'s complete reliance on fixed quarterly contracts is a structural outlier.',
+   rootCause:'Over-reliance on rigid physical safety stocks instead of flexible commercial contracts to handle commodity volatility. Policy to avoid derivatives is sound, but locking both price and quantity for a full quarter amplifies P&L damage during market downturns.',
+   opportunity:'Corporate treasury and purchasing teams postpone a secondary insurance review for European shipping channels — a segment already running healthy margins. Restructuring natural rubber contracts directly attacks the primary point of trapped cash.',
+   steps:[
+     {title:'Split Volume Commitments',text:'Instruct the Singapore procurement office to divide master NR contracts: 60% base quarterly volumes, 40% shifted to a flexible short-term framework.'},
+     {title:'Establish Index-Linked Pricing',text:'Link the 40% flexible volume directly to international benchmarks (SICOM or TOCOM) with a rolling monthly price-reset mechanism.'},
+     {title:'Broad-Base the Vendor Portfolio',text:'Leverage the Multiple Vendor Sourcing Policy to onboard agile ASEAN spot suppliers compliant with the Apollo Sustainable Natural Rubber Policy (ASNRP).'},
+     {title:'Sync Procurement with Plant Floor',text:'Connect the Singapore purchasing desk directly to real-time material logs of high-utilization Indian plants, scaling down spot purchases instantly if downstream demand slows.'}
+   ],
+   metrics:[
+     {label:'Trapped Raw Capital',base:'₹120 Cr released',best:'₹210 Cr via optimized spot',worst:'₹0 — stays locked quarterly'},
+     {label:'Gross Margin',base:'+110 bps expansion',best:'+180 bps via dynamic buying',worst:'−50 bps if spot prices surge'},
+     {label:'P&L Lag',base:'90d → 30d',best:'90d → 15d on spot lines',worst:'Stays at 90d (traditional)'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Renegotiate supply terms with top 3 Thailand and Indonesia vendors'},
+     {phase:'Mo 1–3',text:'Transition first 40% NR block to monthly index-linked contracts; set automated price alerts'},
+     {phase:'Mo 3–6',text:'Integrate global demand-sensing with Singapore desk for dynamic volume matching'}
+   ]
+  },
+
+  {id:'R10',pillar:'raise',
+   name:'Shared Mixer Compound Re-Allocation to Premium SUV Lines',
+   seg:'OHT/PCR',capital:'₹260 Cr',capitalSub:'Upstream Compound Cash Recovery',
+   kpi:'+180 bps Gross Margin Expansion',impact:'Breaks rigid quarterly quotas; dynamically shifts shared mixer chamber capacity from slow agri compounds to high-margin 14–17+ inch SUV lines.',
+   inv:'₹1.50–2.00 Cr',invSub:'Chemical flushing hardware inside shared mixing chambers',
+   action:'Reroute compound mixing cycles away from low-demand agricultural formulations and dynamically re-allocate shared masterbatch capacity toward high-growth premium PCR and SUV tyre lines.',
+   baseline:'45 global mixers across India and Europe. A critical portion are shared assets technically capable of processing base masterbatches for both heavy OHT and PCR. Historically locked into fixed, rigid volume quotas allocated by product segment at the start of each fiscal quarter.',
+   diagnosis:'Global tyre market has sharply diverged: European and Indian agricultural segments down 30–35%, while premium UUHP passenger segment expanded to 44–48% of European volume. Shared mixers could not pivot, continuing to churn heavy agricultural compounds on outdated quarterly targets. Result: ₹5,131 Cr inventory bloat, 73.9% WIP surge, while PCR lines faced compound shortages.',
+   risk:'Shifting a shared mixer rapidly from heavy agricultural rubber to high-performance PCR formulations risks cross-contamination — heavy carbon black residue causing structural flaws in premium passenger tyres.',
+   mitigation:'Automated multi-stage chemical scraping protocols between segment shifts. System runs an intermediate "cleaning batch" and checks internal purity via optical sensors before processing premium passenger lines.',
+   benchmark:'Best-in-class tier-1 companies route up to 40% of shared mixing capacity between product categories weekly to adapt to market conditions. Apollo\'s forecast-driven quotas kept mixers tied to slow lines for months.',
+   rootCause:'Complete insulation of upstream compounding from real-time downstream demand realities. Strategy of Exclusion shifted volume focus to premium tyres, but shared mixing rooms kept pumping agricultural compounds at outdated volume targets.',
+   opportunity:'Plant engineering teams postpone modernization of final inspection conveyors at older bias-tyre facilities — low-margin lines not causing the current ₹2,731 Mn WIP backup. Directing automation talent to the premium radial sector delivers maximum return per engineering hour.',
+   steps:[
+     {title:'Audit Mixer Capabilities',text:'Map exact compound transition tolerances for all 45 global mixers, identifying shared assets that can switch from heavy OHT formulations to PCR compounds with minimal flush times.'},
+     {title:'Update MES Scheduling Rules',text:'Rewrite core rules within the MES to break rigid quarterly segment quotas, allowing dynamic weekly adjustments to mixer capacity.'},
+     {title:'Halt Sluggish Agri Runs',text:'Issue immediate electronic stop-orders to freeze agricultural masterbatch mixing on shared assets whenever regional distribution center stock levels cross their maximum safety buffer.'},
+     {title:'Divert Raw Compounds to PCR',text:'Instantly re-allocate freed mixing chamber time to process high-demand passenger car and SUV compounds, channeling raw material toward downstream PCR extruders and curing presses.'}
+   ],
+   metrics:[
+     {label:'Trapped WIP Stock',base:'₹110 Cr released',best:'₹195 Cr via optimized routing',worst:'₹0 — locked in quarterly quotas'},
+     {label:'Gross Profit',base:'+₹32 Cr via premium lines',best:'+₹55 Cr via full SUV mix',worst:'−₹10 Cr from chamber cleaning holds'},
+     {label:'DIO Impact',base:'−4.0 Days',best:'−6.5 Days',worst:'+1.5 Days via floor piling'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Technical audits on shared mixing assets; update MES for weekly scheduling'},
+     {phase:'Mo 1–3',text:'Pivot first 8 shared mixers from agri lines to high-growth domestic passenger segments'},
+     {phase:'Mo 3–6',text:'Link AI Digital Twin with automated mixing loops for real-time margin-based capacity management'}
+   ]
+  },
+
+  // ─── CREATE ───────────────────────────────────────────────────
+  {id:'C11',pillar:'create',
+   name:'Smart-Cure Thermal Sensor Deployment on Compact Containers',
+   seg:'PCR/SUV',capital:'₹55 Cr',capitalSub:'Vulcanization Capital Recovery',
+   kpi:'+10–15% PCR Equipment Output',impact:'Infrared sensors inside compact containers link to AI Digital Twin to replace fixed timers with active polymer cross-linking termination triggers.',
+   inv:'₹4.70–6.50 Cr',invSub:'Infrared transducers, high-conductivity bladders, Digital Twin licenses',
+   action:'Deploy Smart Cure Technology — real-time vulcanization termination algorithms — and retrofit high-conductivity bladder insulation kits across all PCR compact container press lines to optimize curing cycle times for premium SUV profiles.',
+   baseline:'To expand into the SUV market without heavy capex, plant engineers deployed "Compact containers for SUVs" — setups allowing smaller presses to produce larger SUV profiles by optimizing material thicknesses. These containers currently run rigid fixed-timer cycles regardless of real-time rubber curing states.',
+   diagnosis:'Premium Resource Penalty: structurally complex, thicker-tread UUHP tyres require more plant resource time per cycle. Fixed timers stay locked longer than chemically necessary to provide a safety margin, artificially lowering unit volume. Mixers keep feeding green tyres into this slow bottleneck, creating the ₹2,731 Mn WIP explosion.',
+   risk:'If a thermal sensor faces calibration drift or becomes obscured by chemical outgassing, the algorithm might terminate the curing cycle prematurely, causing under-cured structural layers and field failure during inspection.',
+   mitigation:'Hardcode strict minimum timer safety boundaries directly into the PLC. If the dynamic algorithm attempts to open a container before the baseline heating run completes, a hardware override freezes the gate and sounds a floor alert.',
+   benchmark:'Advanced tier-1 PCR operations process over 80% of premium high-diameter lines using sensor-driven dynamic curing systems. Apollo\'s fixed-timer compact containers remain well below this standard.',
+   rootCause:'Technical bottleneck at vulcanization: compact container bypass was an engineering workaround to avoid capex, but the equipment was left on rigid timers that cannot handle the complex thermal requirements of thick premium tyres.',
+   opportunity:'Industrial automation teams postpone a secondary optimization study for warehouse sorting conveyors at Indian hubs — conveyor adjustments leave the core ₹2,731 Mn WIP bottleneck untouched. Directing AI and automation talent to compact container lines cuts curing cycle delays, delivering far higher return per engineering hour.',
+   steps:[
+     {title:'Retrofit High-Conductivity Bladders',text:'Replace standard internal curing bladders within compact SUV containers with advanced high-conductivity coated variants to ensure rapid, uniform heat transfer into the tyre casing.'},
+     {title:'Install Real-Time Thermal Sensors',text:'Insert non-invasive infrared temperature sensors and heat-flux transducers directly into the internal sidewall plates of compact container molds.'},
+     {title:'Link to AI Digital Twins',text:'Connect the sensor arrays directly to the plant\'s core AI Digital Twin system to calculate real-time polymer cross-linking levels based on active heat inputs.'},
+     {title:'Program Smart Curing Triggers',text:'Rewrite internal press PLC code to replace the fixed timer with an automated termination trigger, opening container gates instantly when rubber reaches its optimal cure uniformity.'}
+   ],
+   metrics:[
+     {label:'Press Cycle Time',base:'−15% premium tyre cycles',best:'−22% via full process tuning',worst:'+2% from calibration holds'},
+     {label:'WIP Cash Released',base:'₹55 Cr by clearing green stock',best:'₹90 Cr via optimized flow',worst:'₹0 — stock stays trapped'},
+     {label:'Equipment Output',base:'+10–15% PCR productivity',best:'+18% via full line sync',worst:'−4% from sensor maintenance'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Map heat-loss profiles across compact container lines; complete AI Digital Twin integration tests'},
+     {phase:'Mo 1–3',text:'Roll out high-conductivity bladders and Smart Cure algorithms at Hungary pilot lines'},
+     {phase:'Mo 3–6',text:'Scale sensor-driven termination globally across all Indian PCR facilities'}
+   ]
+  },
+
+  {id:'C12',pillar:'create',
+   name:'Hungary Warehouse Floor Space Strain Real-Time Tracking',
+   seg:'OHT',capital:'₹45 Cr',capitalSub:'Avoided Warehouse Capex',
+   kpi:'Warehouse Below 82% Capacity',impact:'Volumetric laser sensors at 90%-utilized Hungary facility; space alerts automatically interlock to throttle upstream OHT production lines.',
+   inv:'₹3.50–5.00 Cr',invSub:'Overhead laser arrays, IoT weight pads, WMS-MES API layers',
+   action:'Implement a real-time automated warehouse floor-space strain tracking platform across all manufacturing hubs, paired with a dynamic production-throttle interlock for the OHT segment.',
+   baseline:'Warehouse managers track storage capacity manually via daily barcode checks uploaded at end-of-shift to offline logs. Production schedulers have no live visibility into these logs, continuing to run heavy agricultural assembly lines at full capacity to hit plant utilization targets.',
+   diagnosis:'European farm tyre sales down 30–35%. Heavy finished farm tyres backed up rapidly. Hungary plant hit critical 90% capacity utilization, forcing management to invest in expensive warehouse expansion. Indian plant floors have zero room to absorb the ₹2,731 Mn WIP surge, lowering overall plant efficiency.',
+   risk:'An industrial overhead sensor blocked by dust or a forklift might flag a false capacity alarm, triggering an unnecessary production halt and creating local stockouts.',
+   mitigation:'Automated multi-angle data cross-checks: platform constantly verifies laser sensor data against real-time barcode scan records and warehouse weight metrics. Data mismatch flags a maintenance check without shutting down manufacturing.',
+   benchmark:'Leading tier-1 tyre manufacturers maintain live automated visibility over global distribution spaces, keeping warehouse utilization below 80%. Apollo\'s batch-reported offline logs allowed stack-up until hitting the 90% critical wall.',
+   rootCause:'Complete lack of data visibility connecting downstream warehouse space limits to upstream assembly line planning. Production lines kept running based on old volume goals because they could not see that warehouses were completely full.',
+   opportunity:'Logistics and engineering talent postpone a secondary modernization study for raw material storage layouts at older bias-tyre facilities — low-margin lines not driving current working capital issues. Fixing the bottleneck at the 90%-utilized Hungary facility protects cash flow from unnecessary warehouse construction costs.',
+   steps:[
+     {title:'Install Volumetric Sensors',text:'Retrofit high-precision overhead laser cubing sensors and IoT weight pads across all finished goods bays at the Hungary plant and domestic Indian hubs.'},
+     {title:'Integrate Live Storage Maps',text:'Link volumetric sensors directly to our core ERP system, creating a live digital layout of active warehouse floor space and racking strain.'},
+     {title:'Establish Hard Safety Thresholds',text:'Program a hard safety cap within the tracking system, flagging an automated alert the moment an agricultural regional distribution center crosses 82% of maximum physical storage capacity.'},
+     {title:'Set Up Automated MES Interlocks',text:'Configure the MES to instantly throttle or pause upstream OHT compounding and curing schedules if the downstream warehouse alert stays active for more than 24 hours.'}
+   ],
+   metrics:[
+     {label:'Hungary Capex Saved',base:'₹45 Cr (avoid construction)',best:'₹65 Cr via full space optimization',worst:'₹0 — excess stock forces build'},
+     {label:'Agri Holding Capital',base:'₹90 Cr released',best:'₹160 Cr via real-time pull sync',worst:'₹0 — cash stays in farm tyres'},
+     {label:'Floor Space Freed',base:'+15% Indian plant floors for WIP',best:'+25% via rapid stock clearing',worst:'−5% from localized staging errors'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Install laser volumetric sensors across Hungary finished goods bays; map digital storage layouts'},
+     {phase:'Mo 1–3',text:'Write and test API integration connecting warehouse space logs to core MES scheduling software'},
+     {phase:'Mo 3–6',text:'Roll out real-time space strain tracking globally across all Indian commercial and agri facilities'}
+   ]
+  },
+
+  {id:'C13',pillar:'create',
+   name:'ISO 20400 Virtual Gemba Compliance Audit Acceleration',
+   seg:'OHT/Raw',capital:'₹85 Cr',capitalSub:'Sourcing Agility Liquidity',
+   kpi:'Onboarding: 45d → 11d (−75%)',impact:'Encrypted virtual Gemba video audits replace physical field visits, enabling rapid expansion of certified NR vendor registry under ISO 20400 and ASNRP standards.',
+   inv:'₹1.00–2.00 Cr',invSub:'Ruggedized streaming tablets, video verification portals',
+   action:'Accelerate third-party compliance verification and supplier onboarding cycles through automated hybrid Gemba virtual audit streaming pathways for 100% of upstream raw material vendors.',
+   baseline:'Apollo is the first Indian automotive company to secure ISO 20400:2017 sustainable procurement certification. 100% of NR suppliers must sign the ASNRP per GPSNR framework requirements. Confirming ESG requirements relies on physical in-person field audits at remote smallholder plantations across Southeast Asia — weeks of physical travel per screening.',
+   diagnosis:'Physical audit process creates extended operational lag. Slow onboarding keeps Singapore procurement desk dependent on a concentrated pool of long-term vendors, forcing rigid fixed-quarter contracts. When the Red Sea crisis added 14–15 days to maritime transit and NR hit ₹247–250/kg, the desk could not quickly shift volumes to alternative compliant spot vendors, triggering defensive physical hoarding and a 300 bps gross margin contraction.',
+   risk:'Virtual screening model introduces risk of vendor misrepresentation — a supplier could stream pre-recorded footage of a compliant facility while running uncertified operations elsewhere.',
+   mitigation:'Hardcode mandatory real-time cryptographic timestamps and GPS metadata injections into the streaming application. If the camera loses cell tower validation or detects altered coordinate files, software instantly drops the connection and marks the supplier for an unannounced physical inspection.',
+   benchmark:'Leading multinationals manage over 60% of tier-2 and tier-3 supplier verification pipelines using remote sensor-driven virtual video platforms to cut operational cycle times.',
+   rootCause:'Complete decoupling of long-term sustainable compliance checks from rapid short-term sourcing needs. World-class certification framework was built but the slow pace of physical field audits made it impossible to react quickly to macro disruptions.',
+   opportunity:'Corporate compliance and procurement talent redirected away from a secondary carbon footprint mapping project for local transport fleets — zero impact on the current ₹5,131 Cr working capital crunch. Prioritizing virtual screening directly removes the block on supplier onboarding, enabling dynamic spot-market switches.',
+   steps:[
+     {title:'Deploy Live Streaming Infrastructure',text:'Issue standardized mobile data logging apps and secure high-definition wearable camera hardware to field auditors and regional supplier representatives.'},
+     {title:'Establish Hybrid Gemba Workflows',text:'Replace traditional multi-week physical site visits with structured real-time virtual video inspection protocols, streaming live factory floor operations directly to central compliance hubs.'},
+     {title:'Automate Compliance Scoring',text:'Build standardized digital evaluation cards into the screening portal, automatically generating an ASNRP risk score based on video evidence and digital documents.'},
+     {title:'Fast-Track Vendor Approvals',text:'Integrate virtual audit results directly into the Singapore procurement desk\'s vendor directory, cutting supplier validation loops to under 48 hours to enable rapid spot-market switches.'}
+   ],
+   metrics:[
+     {label:'Onboarding Time',base:'75% compression (45d → 11d)',best:'90% compression (48 hrs)',worst:'0% — travel restrictions halt'},
+     {label:'Alt Vendor Registry',base:'+14 certified vendors in 60d',best:'+25 vendors globally',worst:'0 onboarded — stays concentrated'},
+     {label:'Raw Material Buffer Cash',base:'₹85 Cr released',best:'₹140 Cr via dynamic spot shifts',worst:'₹0 — rigid contracts remain'}
+   ],
+   timeline:[
+     {phase:'Wk 1–4',text:'Code virtual audit guidelines into supplier portal; distribute ruggedized streaming hardware'},
+     {phase:'Mo 1–3',text:'Transition 100% of new ASEAN supplier screenings to hybrid virtual video model'},
+     {phase:'Mo 3–6',text:'Connect compliance portal to Atma Nirbhar Bharat NE India plantation database'}
+   ]
+  }
+];
+
+// ══ RENDERERS ══════════════════════════════════════════════════
+
+// ── Overview table row ──────────────────────────────────────────
+function renderRow(p){
+  return `<tr>
+    <td><span class="proj-id">${p.id}</span></td>
+    <td><span class="proj-name">${p.name}</span></td>
+    <td><span class="seg-badge">${p.seg}</span></td>
+    <td><span class="pill ${p.pillar}">${SYM[p.pillar]} ${LBL[p.pillar]}</span></td>
+    <td class="cap-val">${p.capital}<span class="cap-sub">${p.capitalSub}</span></td>
+    <td class="kpi">${p.kpi}</td>
+    <td class="impact">${p.impact}</td>
+    <td class="inv-val">${p.inv}<span class="inv-sub">${p.invSub}</span></td>
+  </tr>`;
+}
+
+// ── Accordion item ──────────────────────────────────────────────
+function renderAcc(p,idx){
+  const steps = p.steps.map((s,i)=>`
+    <div class="exec-step">
+      <div class="step-num">0${i+1}</div>
+      <div class="step-text"><strong>${s.title}:</strong> ${s.text}</div>
+    </div>`).join('');
+
+  const metrics = p.metrics.map(m=>`
+    <div class="m-box">
+      <div class="m-label">${m.label}</div>
+      <div class="m-row b">▶ Base: ${m.base}</div>
+      <div class="m-row g">↑ Best: ${m.best}</div>
+      <div class="m-row w">↓ Worst: ${m.worst}</div>
+    </div>`).join('');
+
+  const tl = p.timeline.map(t=>`
+    <div class="tl-pill">
+      <div class="tl-phase">${t.phase}</div>
+      <div class="tl-text">${t.text}</div>
+    </div>`).join('');
+
+  const uid = `acc-${p.pillar}-${idx}`;
+  return `
+  <div class="acc-item p-${p.pillar}" id="${uid}">
+    <div class="acc-head" onclick="toggleAcc(document.getElementById('${uid}'))">
+      <div class="acc-head-id">${p.id}</div>
+      <div class="acc-head-info">
+        <div class="acc-head-title">${p.name}</div>
+        <div class="acc-head-meta">
+          <span class="seg-badge">${p.seg}</span>
+          <span class="pill ${p.pillar}">${SYM[p.pillar]} ${LBL[p.pillar]}</span>
+          <span style="font-family:var(--mono);font-size:11px;color:${COL[p.pillar]};font-weight:600;">${p.capital}</span>
+        </div>
+      </div>
+      <div class="acc-head-kpi">${p.kpi}</div>
+      <div class="acc-chevron">▼</div>
+    </div>
+    <div class="acc-body">
+      <div class="acc-body-inner">
+        <div class="acc-top-row">
+          <div class="acc-stat">
+            <div class="acc-stat-label">Capital Unlocked</div>
+            <div class="acc-stat-val">${p.capital}</div>
+            <div class="acc-stat-sub">${p.capitalSub}</div>
+          </div>
+          <div class="acc-stat">
+            <div class="acc-stat-label">Structural KPI</div>
+            <div class="acc-stat-val" style="font-size:13px;">${p.kpi}</div>
+          </div>
+          <div class="acc-stat">
+            <div class="acc-stat-label">Investment Required</div>
+            <div class="acc-stat-val" style="font-size:13px;">${p.inv}</div>
+            <div class="acc-stat-sub">${p.invSub}</div>
+          </div>
+        </div>
+        <div class="acc-sections">
+          <div class="acc-section">
+            <div class="sec-label">Strategic Action</div>
+            <div class="sec-text">${p.action}</div>
+          </div>
+          <div class="acc-section">
+            <div class="sec-label">Current Baseline</div>
+            <div class="sec-text">${p.baseline}</div>
+          </div>
+          <div class="acc-section">
+            <div class="sec-label">Current State Diagnosis</div>
+            <div class="sec-text">${p.diagnosis}</div>
+          </div>
+          <div class="acc-section">
+            <div class="sec-label">Risk → Mitigation</div>
+            <div class="sec-text"><strong>Risk:</strong> ${p.risk}<br><br><strong>Mitigation:</strong> ${p.mitigation}</div>
+          </div>
+          <div class="acc-section">
+            <div class="sec-label">Industry Benchmark</div>
+            <div class="sec-text">${p.benchmark}</div>
+          </div>
+          <div class="acc-section">
+            <div class="sec-label">Root Cause</div>
+            <div class="sec-text">${p.rootCause}</div>
+          </div>
+          <div class="acc-section" style="grid-column:1/-1;">
+            <div class="sec-label">Execution Plan</div>
+            <div class="exec-steps">${steps}</div>
+          </div>
+          <div class="acc-section" style="grid-column:1/-1;">
+            <div class="sec-label">Quantitative Impact — Base / Best / Worst</div>
+            <div class="acc-metrics">${metrics}</div>
+          </div>
+          <div class="acc-section" style="grid-column:1/-1;">
+            <div class="sec-label">Implementation Timeline</div>
+            <div class="acc-timeline">${tl}</div>
+          </div>
+          <div class="acc-section" style="grid-column:1/-1;">
+            <div class="sec-label">Opportunity Cost Analysis</div>
+            <div class="sec-text">${p.opportunity}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══ POPULATE ═══════════════════════════════════════════════════
+const PILLARS = ['elim','reduce','raise','create'];
+const GRP_LABEL={elim:'▲ ELIMINATE',reduce:'▼ REDUCE',raise:'↑ RAISE',create:'★ CREATE'};
+const GRP_CLS  ={elim:'grp elim',reduce:'grp reduce',raise:'grp raise',create:'grp create'};
+
+// Overview table
+const tbody = document.getElementById('overview-tbody');
+PILLARS.forEach(pillar=>{
+  const ps = PROJECTS.filter(p=>p.pillar===pillar);
+  tbody.innerHTML += `<tr class="${GRP_CLS[pillar]}"><td colspan="8">${GRP_LABEL[pillar]}</td></tr>`;
+  ps.forEach(p=>{ tbody.innerHTML += renderRow(p); });
+});
+// Total row
+tbody.innerHTML += `<tr class="total-row">
+  <td colspan="3"><span class="t-label">Portfolio Total — ${PROJECTS.length} Projects</span><div class="t-note">Base Case · PCR / TBR / OHT · FY2025–26</div></td>
+  <td></td>
+  <td><span class="t-amount">₹1,890 Cr+</span><div class="t-note">Working Capital (Base)</div></td>
+  <td><span style="font-family:var(--mono);font-size:12px;color:#ccc;">DIO: 127.5d → 82d</span></td>
+  <td><span style="font-size:12px;font-weight:300;color:#aaa;line-height:1.5;">Full portfolio decouples mixing-to-curing bottleneck and converts ₹5,131 Cr inventory bloat into structural advantage.</span></td>
+  <td><span style="font-family:var(--mono);font-size:13px;font-weight:600;color:#F4B46A;">₹27–35 Cr</span><div class="t-note" style="color:#888;">Total Investment</div></td>
+</tr>`;
+
+// Accordion tabs
+PILLARS.forEach(pillar=>{
+  const ps = PROJECTS.filter(p=>p.pillar===pillar);
+  const total = ps.reduce((s,p)=>{
+    const n = parseFloat(p.capital.replace(/[^0-9.]/g,''));
+    return s+n;
+  },0);
+  // meta strip
+  document.getElementById(pillar+'-meta').innerHTML =
+    `<div class="tsm-item"><strong>${ps.length} Projects</strong></div>`+
+    `<div class="tsm-item">Capital Unlocked: <strong style="color:${COL[pillar]}">₹${Math.round(total)} Cr (Base)</strong></div>`+
+    `<div class="tsm-item">ERRC Pillar: <strong>${PILLAR_LABEL[pillar]}</strong></div>`+
+    `<div class="tsm-item" style="margin-left:auto;font-size:10px;color:#bbb;">Click any project header to expand all 12 sections</div>`;
+  // accordion cards
+  const acc = document.getElementById(pillar+'-acc');
+  ps.forEach((p,i)=>{ acc.innerHTML += renderAcc(p,i); });
+});
+</script>
+</body>
+</html>
